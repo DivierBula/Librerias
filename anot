@@ -1,0 +1,1756 @@
+<div class="hidVacio">
+    <div class="col col100 row10">
+        <div class="inner-col clearfix">
+        </div>
+    </div>
+
+    <div class="col col100 row50 animated bounceInDown">
+        <div class="inner-col clearfix texture">
+            <div class="breadcrum">SIP > Tratamiento > Anotaciones</div>
+            <div class="workflow pointer noselect" (click)="model.tools=false">
+                <span class=" animated fadeInDown" *ngIf="model.tools">Cerrar Info <i class="fas fa-times"></i></span>
+            </div>
+            <div class="workflow pointer noselect" (click)="model.tools=!model.tools">
+                <span class=" animated fadeInDown" *ngIf="!model.tools">Abrir Info <i class="fas fa-tools"></i></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col col80 row100">
+        <div class="inner-col clearfix texture">
+            <div class="dash title-dash"> <i class="fas fa-file"></i> Anotaciones
+            </div>
+            <div class="dash btn-dash" style="width:180px">
+                <div class="btn-col btn-col-content transition pointer noselect modal-action animated zoomIn"
+                    style="width:180px" (click)="openAnotacion(false)">Crear <div class="inner-btn"><i
+                            class="fas fa-plus-circle"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col col20 row100">
+        <div class="inner-col clearfix texture">
+            <div class="col80 dash searchbar">
+                <input type="text" placeholder="Buscar..." (keyup)="search($event.target.value);"
+                    [(ngModel)]="model.inputSearch" (blur)="BlurSearch()">
+                <div class="search-btn"><i class="fas fa-search"></i></div>
+            </div>
+            <div class="col20 dash typesearch tooltip" title="Des/Activar búsqueda Local o Remoto">
+                <div class="btn-type noselect pointer" (click)="toggleSearch()"><i class="fas fa-user"
+                        *ngIf="!model.searchType"></i> <i class="fas fa-database" *ngIf="model.searchType"></i></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-row-absolute">
+        <div class="col rowfull col100">
+            <div class="inner-col texture nopadding clearfix">
+                <div class="table-content">
+                    <table class="flex-table table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th *ngIf="model.tools">Info</th>
+                                <th>Consecutivo</th>
+                                <th>Fecha</th>
+                                <th>Descripción</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="scroll">
+                            <tr *ngFor="let historial of model.varhistorial; let i = index">
+                                <td *ngIf="model.tools">
+                                    <!-- <div class="col col50" (click)="openWorkflow()">
+                                        <div class="inner-tool animated jackInTheBox pointer noselect workflow-tool"><i
+                                                class="fas fa-code-branch"></i></div>
+                                    </div> -->
+                                    <div class="col col50" (click)="openInforow(historial)">
+                                        <div class="inner-tool animated jackInTheBox pointer noselect info-tool"><i
+                                                class="fas fa-info-circle"></i></div>
+                                    </div>
+                                </td>
+                                <td>{{historial.consecutivo}}</td>
+                                <td>{{historial.fecha | date: "dd-MM-yyyy"}}</td>
+                                <td>{{historial.descripcion}}</td>
+                                <td>
+                                    <i class="icontd fas fa-check-circle uno tooltip" *ngIf="historial.estado == 'AP'"
+                                        title="Aprobado"></i>
+                                    <i class="icontd fas fa-user-edit alert tooltip" *ngIf="historial.estado == 'EC'"
+                                        title="En Construcción"></i>
+                                    <i class="icontd fas fa-times-circle alert tooltip" *ngIf="historial.estado == 'RE'"
+                                        title="Rechazado" style="color:#c40303"></i>
+                                    <i class="icontd fas fa-sync-alt fa-pulse tooltip" *ngIf="historial.estado == 'PA'"
+                                        title="Por Aprobar" style="color:#c48a03"></i>
+                                </td>
+                                <td class="clearfix">
+                                    <div class="col col100 rowfull">
+                                        <div class="inner-row-col pointer noselect"
+                                            (click)="openDetalle(historial,true)">
+                                            <span class="icon-inner-row-col transition">Detalle</span>
+                                        </div>
+                                    </div>
+                                    <div class="col col100 rowfull" *ngIf="historial.estado == 'EC'">
+                                        <div class="inner-row-col pointer noselect"
+                                            (click)="editarAnotacion(historial,false)">
+                                            <span class="icon-inner-row-col transition">Editar</span>
+                                        </div>
+                                    </div>
+                                    <div class="col col100 rowfull">
+                                        <div class="inner-row-col pointer noselect" (click)="openBitacora()">
+                                            <span class="icon-inner-row-col transition">Bitácora</span>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr *ngIf="model.varhistorial?.length == 0">
+                                <div class="dbempty">Sin datos</div>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<app-modal [title]="'Anotaciones #'+model.varAnotaciones.consecutivo" [show]="model.modal" [size]="'big-modal'" (close)="closeAnotacionModal($event)">
+    <div class="section-box">
+        <div class="timeline-section">
+            <ul class="clearfix" *ngIf="!model.IsLectura">
+                <li *ngFor="let step of model.steps;" [ngClass]="{'active': step.active}"
+                    (click)="nextPage(step.num - 1)">
+                    <div class="circle pointer noselect" *ngIf="step.ver">{{step.numMostrar}}</div>
+                    <div class="line"></div>
+                    <div class="text" *ngIf="step.ver">{{step.title}}</div>
+                </li>
+            </ul>
+            <ul class="clearfix" *ngIf="model.IsLectura == true">
+                <li *ngFor="let step of model.steps;" [ngClass]="{'active': step.active}"
+                    (click)="nextPageDetalle(step.num - 1)">
+                    <div class="circle pointer noselect" *ngIf="step.ver">{{step.num}}</div>
+                    <div class="line"></div>
+                    <div class="text" *ngIf="step.ver">{{step.title}}</div>
+                </li>
+            </ul>
+        </div>
+        <div class="section-modal animated slideInRight faster section-modal-1" *ngIf="model.steps[0].active">
+            <div class="col col100">
+                <div class="inner-col texture clearfix">
+                    <div class="col col25" *ngIf="model.varAnotaciones.anotacion_id != 0">
+                        <div class="label-row">Consecutivo</div>
+                        <input type="text" disabled [(ngModel)]="model.varAnotaciones.consecutivo">
+                    </div>
+                    <div class="line-col"></div>
+                    <div class="col col25">
+                        <div class="label-row">Fecha</div>
+                        <input type="date" [disabled]="model.IsLectura" [(ngModel)]="model.varAnotaciones.fecha">
+                    </div>
+                    <div class="col col25">
+                        <div class="label-row">Misión de Trabajo</div>
+                        <input type="text" placeholder="Selecciona" id="Mision de Trabajo" (click)="SaveMt()"
+                            [disabled]="model.IsLectura" [(ngModel)]="model.varAnotaciones.num_mision">
+                    </div>
+                    <div class="col col50">
+                        <div class="label-row">Categoría</div>
+                        <input type="text" placeholder="Selecciona" id="Categorias" (click)="SaveCategorias()"
+                            [disabled]="model.IsLectura" [(ngModel)]="model.varAnotaciones.categoria">
+                    </div>
+                    <div class="col col10">
+                        <div class="label-row center">Anotación Territorio?</div>
+                        <input class="tgl tgl-flat" id="cbStep3" type="checkbox" [disabled]="model.IsLectura"
+                            [(ngModel)]="model.varAnotaciones.activarTerritorio" (change)="obtenerNumMostrar()">
+                        <label class="tgl-btn" for="cbStep3"></label>
+                    </div>
+                    <div class="col col10">
+                        <div class="label-row center">Anotación Orgánico?</div>
+                        <input class="tgl tgl-flat" id="cbStep4" type="checkbox" [disabled]="model.IsLectura"
+                            [(ngModel)]="model.varAnotaciones.activarOrganico" (change)="obtenerNumMostrar()">
+                        <label class="tgl-btn" for="cbStep4"></label>
+                    </div>
+                    <div class="col col10">
+                        <div class="label-row center">Anotación Biográfico?</div>
+                        <input class="tgl tgl-flat" id="cbStep5" type="checkbox" [disabled]="model.IsLectura"
+                            [(ngModel)]="model.varAnotaciones.activarBiografico" (change)="obtenerNumMostrar()">
+                        <label class="tgl-btn" for="cbStep5"></label>
+                    </div>
+                    <div class="col col10">
+                        <div class="label-row center">Anotación Bienes?</div>
+                        <input class="tgl tgl-flat" id="cbStep6" type="checkbox" [disabled]="model.IsLectura"
+                            [(ngModel)]="model.varAnotaciones.activarBienes" (change)="obtenerNumMostrar()">
+                        <label class="tgl-btn" for="cbStep6"></label>
+                    </div>
+                    <div class="col col10">
+                        <div class="label-row center">Anotación Mov. Migratorios?</div>
+                        <input class="tgl tgl-flat" id="cbStep2" type="checkbox" [disabled]="model.IsLectura" [(ngModel)]="model.varAnotaciones.activarMovMigratorios" (change)="obtenerNumMostrar()">
+                        <label class="tgl-btn" for="cbStep2"></label>
+                    </div>
+                    <div class="col col50" style="float: right;">
+                        <div class="title-row">Recolecciones</div>
+                        <div class="col col100">
+                            <div class="inner-col nopadding clearfix">
+                                <div class="table-content mini-tabla nopadding">
+                                    <table class="flex-table table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Fecha Filtro</th>
+                                                <th>Consecutivo</th>
+                                                <th>Fecha Recoleccion</th>
+                                                <th>Descripción</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="scroll">
+                                            <tr *ngFor="let det of model.varRecoleccion; let i = index">
+                                                <td>
+                                                    <input type="text" class="datepicker-range{{i}}" data-range="true"
+                                                        [disabled]="model.IsLectura" data-multiple-dates-separator=" - "
+                                                        (mousedown)="InicializarPeriodo('', i)"
+                                                        (mouseup)="InicializarPeriodo(det, i)"
+                                                        placeholder="Rango de Fechas">
+                                                </td>
+                                                <td>
+                                                    <input type="text" placeholder="Selecciona"
+                                                        [disabled]="model.IsLectura" (click)="saveConsecutivo(i)"
+                                                        [(ngModel)]="det.consecutivo">
+                                                </td>
+                                                <td>
+                                                    <input type="text" disabled [(ngModel)]="det.fecha">
+                                                </td>
+                                                <td>
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="AmpliarTextoDescripcion(det)">
+                                                        <span class="icon-inner-row-col transition">
+                                                            <i class="fas fa-angle-double-down uno"></i>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col50">
+                        <div class="label-row">Anotación</div>
+                        <textarea [disabled]="model.IsLectura" maxlength="70"
+                            [(ngModel)]="model.varAnotaciones.descripcion"></textarea>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == false">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPage(1)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == true">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPageDetalle(1)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section-modal animated slideInRight faster section-modal-3" *ngIf="model.steps[1].active">
+            <div class="col col100">
+                <div class="inner-col texture clearfix">
+                    <div class="col col100">
+                        <div class="title-row">Componente Territorial</div>
+                        <div class="inner-col nopadding clearfix">
+                            <div class="title-col">Actividad</div>
+                            <div class="table-content mini-tabla nopadding">
+                                <table class="flex-table table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Actividad</th>
+                                            <th>Fecha Inicio</th>
+                                            <th>Fecha Fin</th>
+                                            <th>Estados</th>
+                                            <th>Atributos</th>
+                                            <th *ngIf="!model.IsLectura">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varActividad; let i = index">
+                                            <td>
+                                                <select class="select2" [(ngModel)]="det.actividad_id"
+                                                    [disabled]="model.IsLectura" (change)="changeactividad(det,false)">
+                                                    <option value="0">Seleccionar</option>
+                                                    <option *ngFor="let listaactividad of model.ListaActividades;"
+                                                        value="{{listaactividad.actividad_id}}">
+                                                        {{listaactividad.actividad}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input type="date" placeholder="" [(ngModel)]="det.fecha_inicio"
+                                                    [disabled]="model.IsLectura || det.requiere_fechas=='N'">
+                                            </td>
+                                            <td>
+                                                <input type="date" placeholder="" [(ngModel)]="det.fecha_fin"
+                                                    [disabled]="model.IsLectura || det.requiere_fechas=='N'">
+                                            </td>
+                                            <td>
+                                                <select class="select2" [(ngModel)]="det.estados"
+                                                    [disabled]="model.IsLectura || det.requiere_estados =='N'">
+                                                    <option *ngFor="let listaEstados of model.listaEstados;"
+                                                        value="{{listaEstados.id}}">
+                                                        {{listaEstados.detalle}}</option>
+                                                </select>
+                                            </td>
+
+                                            <td class="clearfix">
+                                                <div class="col col100 rowfull">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="openActivTerri(det)">
+                                                        <span class="icon-inner-row-col transition">Guardar y abrir
+                                                            Actividad Territorial</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td *ngIf="!model.IsLectura">
+                                                <i class="fas size20 fa-times-circle pointer noselect"
+                                                    (click)="deleteTerritorial(i)" *ngIf="det.NuevoRegistro"></i>
+                                            </td>
+                                        </tr>
+                                        <tr class="clearfix" *ngIf="!model.IsLectura">
+                                            <div class="col100 padding4 rowfull" (click)="addTerritorial()">
+                                                <div class="inner-row-col pointer noselect"> <span
+                                                        class="icon-inner-row-col transition">Agregar <i
+                                                            class="fas fa-plus-circle uno"></i></span> </div>
+                                            </div>
+                                        </tr>
+                                        <tr *ngIf="model.IsLectura && model.varActividad?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == false">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPage(2)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == true">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPageDetalle(2)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section-modal animated slideInRight faster section-modal-4" *ngIf="model.steps[2].active">
+            <div class="col col100">
+                <div class="inner-col texture clearfix">
+                    <div class="col col100" *ngIf="!model.IsLectura">
+                        <div class="col col50">
+                            <div class="label-row">Descripción de la recolección</div>
+                            <textarea [disabled]="model.IsLectura"
+                                [(ngModel)]="model.varRecoleccion[0].descripcion"></textarea>
+                        </div>
+                        <div class="col col25" style="float: right;">
+                            <div class="label-row">&nbsp;</div>
+                            <div class="btn-buscar pointer noselect" (click)="openModalVinculos()">Crear Vínculos</div>
+                        </div>
+                        <div class="col col25" style="float: right;">
+                            <div class="label-row">&nbsp;</div>
+                            <div class="btn-buscar pointer noselect" (click)="openModalCorgas()">Crear CORGA</div>
+                        </div>
+                    </div>
+
+                    <div class="line-col"></div>
+
+                    <div class="col col100 title-row">Componente Orgánico</div>
+                    <div class="col col70">
+                        <div class="inner-col nopadding clearfix col-fix">
+                            <div class="title-col">Organizaciones Ilegales</div>
+                            <div class="table-content mini-tabla nopadding">
+                                <table class="flex-table table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Sub-Estructura</th>
+                                            <th>Estructura</th>
+                                            <th>Grupo</th>
+                                            <th>
+                                                <div class="col"
+                                                    [ngClass]="{'col100': model.IsLectura, 'col60': !model.IsLectura }">
+                                                    Observaciones
+                                                </div>
+                                                <div class="col"
+                                                    [ngClass]="{'col0': model.IsLectura, 'col40': !model.IsLectura }">
+                                                    Acciones
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varOrgan; let i = index">
+                                            <!-- sub -->
+                                            <td>
+                                                <input [disabled]="model.IsLectura" type="text" placeholder="Selecciona"
+                                                    (click)="saveSubEstructura(i)" [(ngModel)]="det.subestructura">
+                                            </td>
+                                            <!-- es -->
+                                            <td>
+                                                <input [disabled]="model.IsLectura" type="text" placeholder="Selecciona"
+                                                    (click)="saveEstructura(i)" [(ngModel)]="det.estructura">
+                                            </td>
+                                            <!-- grupo -->
+                                            <td>
+                                                <input [disabled]="model.IsLectura" type="text" placeholder="Selecciona"
+                                                    (click)="saveGrupos(i)" [(ngModel)]="det.grupo">
+                                            </td>
+
+
+                                            <!-- <td>
+                                                <input [disabled]="model.IsLectura" type="text" placeholder="Selecciona" (click)="saveSubEstructura(i)"
+                                                    [(ngModel)]="det.subestructura">
+                                            </td>
+                                            <td>                                                
+                                                <input [disabled]="model.IsLectura" type="text" placeholder="Selecciona" (click)="saveEstructura(i)"
+                                                    [(ngModel)]="det.estructura">
+                                            </td>
+                                            <td>                                                
+                                                <input [disabled]="model.IsLectura" type="text" placeholder="Selecciona" (click)="saveGrupos(i)"
+                                                    [(ngModel)]="det.grupo">
+                                            </td> -->
+                                            <td>
+                                                <div class="col"
+                                                    [ngClass]="{'col100': model.IsLectura, 'col60': !model.IsLectura }">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="AmpliarTextoObservacion(det,model.IsLectura)">
+                                                        <span class="icon-inner-row-col transition">
+                                                            <i class="fas fa-angle-double-down uno"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col"
+                                                    [ngClass]="{'col0': model.IsLectura, 'col40': !model.IsLectura }">
+                                                    <i class="fas size20 fa-times-circle pointer noselect"
+                                                        (click)="deleteOrgan(i)" *ngIf="det.NuevoRegistro"></i>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="clearfix" *ngIf="!model.IsLectura">
+                                            <div class="col100 padding4 rowfull" (click)="addOrgan()">
+                                                <div class="inner-row-col pointer noselect"> <span
+                                                        class="icon-inner-row-col transition">Agregar <i
+                                                            class="fas fa-plus-circle uno"></i></span> </div>
+                                            </div>
+                                        </tr>
+                                        <tr *ngIf="model.IsLectura && model.varOrgan?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col30">
+                        <div class="inner-col nopadding clearfix col-fix">
+                            <div class="title-col">Organización con Personería Jurídica</div>
+                            <div class="table-content mini-tabla nopadding">
+                                <table class="flex-table table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Nombre Organización</th>
+                                            <th>
+                                                <div class="col"
+                                                    [ngClass]="{'col100': model.IsLectura, 'col60': !model.IsLectura }">
+                                                    Observaciones
+                                                </div>
+                                                <div class="col"
+                                                    [ngClass]="{'col0': model.IsLectura, 'col40': !model.IsLectura }">
+                                                    Acciones
+                                                </div>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varOrgan2; let i = index">
+                                            <td>
+                                                <select [(ngModel)]="det.organizacion_id" [disabled]="model.IsLectura">
+                                                    <option value="0">Seleccionar</option>
+                                                    <option *ngFor="let org of model.listOrganizaciones"
+                                                        value="{{org.organizacion_id}}">{{org.nombre}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <div class="col"
+                                                    [ngClass]="{'col100': model.IsLectura, 'col60': !model.IsLectura }">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="AmpliarTextoObservacion(det,model.IsLectura)">
+                                                        <span class="icon-inner-row-col transition">
+                                                            <i class="fas fa-angle-double-down uno"></i>
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                <div class="col"
+                                                    [ngClass]="{'col0': model.IsLectura, 'col40': !model.IsLectura }">
+                                                    <i class="fas size20 fa-times-circle pointer noselect"
+                                                        (click)="deleteOrgan2(i)" *ngIf="det.NuevoRegistro"></i>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr class="clearfix" *ngIf="!model.IsLectura">
+                                            <div class="col100 padding4 rowfull" (click)="addOrgan2()">
+                                                <div class="inner-row-col pointer noselect"> <span
+                                                        class="icon-inner-row-col transition">Agregar <i
+                                                            class="fas fa-plus-circle uno"></i></span> </div>
+                                            </div>
+                                        </tr>
+                                        <tr *ngIf="model.IsLectura && model.varOrgan2?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == false">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPage(3)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == true">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPageDetalle(3)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section-modal animated slideInRight faster section-modal-5" *ngIf="model.steps[3].active">
+            <div class="col col100">
+                <div class="inner-col texture clearfix">
+                    <div class="col col100" *ngIf="!model.IsLectura">
+                        <div class="col col50">
+                            <div class="label-row">Descripción de la recolección</div>
+                            <textarea [disabled]="model.IsLectura"
+                                [(ngModel)]="model.varRecoleccion[0].descripcion"></textarea>
+                        </div>
+                        <div class="col col25" style="float: right;">
+                            <div class="label-row">&nbsp;</div>
+                            <div class="btn-buscar pointer noselect" (click)="openModalVinculos()">Crear Vínculo</div>
+                        </div>
+                        <div class="col col25" style="float: right;">
+                            <div class="label-row">&nbsp;</div>
+                            <div class="btn-buscar pointer noselect" (click)="openModalCobios()">Crear COBIO</div>
+                        </div>
+                    </div>
+
+                    <div class="line-col"></div>
+                    <div class="col col100 title-row">Componentes Biográficos</div>
+                    <div class="col col100">
+                        <div class="col col25">
+                            <span style="color: #606060; font-size: 18px;">Identificado - Cantidad: {{model.varComp.length}}</span>
+                            <div class="roundedTwo minirounded col nopadding margin-right">
+                                <input id="cbident1" [disabled]="model.tipoIdent" type="checkbox"
+                                    [checked]="model.tipoIdent" (change)="model.tipoIdent=true" />
+                                <label for="cbident1"></label>
+                            </div>
+                        </div>
+                        <div class="col col25">
+                            <span style="color: #606060; font-size: 18px; position: relavite; top: 5px;">No Identificado - Cantidad: {{model.varComp2.length}}</span>
+                            <div class="roundedTwo minirounded col nopadding margin-right">
+                                <input id="cbident2" [disabled]="!model.tipoIdent" type="checkbox"
+                                    [checked]="!model.tipoIdent" (change)="model.tipoIdent=false" />
+                                <label for="cbident2"></label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col col100">
+                        <div class="inner-col nopadding clearfix">
+                            <div class="table-content mini-tabla nopadding">
+                                <table class="flex-table table table-striped table-hover" *ngIf="model.tipoIdent">
+                                    <thead>
+                                        <tr>
+                                            <th>No. Identificación</th>
+                                            <th>Nombre Completo</th>
+                                            <th>Tipo Persona</th>
+                                            <th>Rol</th>
+                                            <th>Observaciones Específicas</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varComp; let i = index">
+                                            <td>
+                                                <div class="col col80" style="padding: 0px !important;">
+                                                    <input
+                                                        [disabled]="model.IsLectura || det.persona_id!=0 && det.persona_id!=undefined"
+                                                        class="togetherLeft" type="number" placeholder="Identificación"
+                                                        [(ngModel)]="det.num_identificacion">
+                                                </div>
+                                                <div class="col col20"
+                                                    [ngClass]="{'bloqueoDiv': det.persona_id!=0 && det.persona_id!=undefined}"
+                                                    *ngIf="!model.IsLectura" style="padding: 0px !important;">
+                                                    <div class="search-modal" (click)="ObtenerDatosPersona(det)"
+                                                        *ngIf="!det.buscandoSearch">
+                                                        <div class="btn-search pointer noselect">
+                                                            <i class="fas fa-search"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="search-modal" *ngIf="det.buscandoSearch">
+                                                        <div class="btn-search">
+                                                            <i class="fa fa-spinner fa-pulse"></i>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="text" [(ngModel)]="det.nombreCompleto" disabled>
+                                            </td>
+                                            <td>
+                                                <select [(ngModel)]="det.tipo_persona_id" [disabled]="model.IsLectura">
+                                                    <option *ngFor="let tipoPersona of model.lstTipoPersona"
+                                                        value="{{tipoPersona.id}}">{{tipoPersona.detalle}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select [(ngModel)]="det.rol_id" [disabled]="model.IsLectura">
+                                                    <option *ngFor="let rol of model.lstRol" value="{{rol.id}}">
+                                                        {{rol.detalle}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <textarea [(ngModel)]="det.observaciones"
+                                                    [disabled]="model.IsLectura"></textarea>
+                                            </td>
+                                            <td>
+                                                <div class="col col100 rowfull"
+                                                    *ngIf="det.persona_id!=0 && det.persona_id!=undefined">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="openSenal(det, i)">
+                                                        <span class="icon-inner-row-col transition">Señales</span>
+                                                    </div>
+                                                </div>
+                                                <i class="fas size20 fa-times-circle pointer noselect"
+                                                    (click)="deleteComp(i)" *ngIf="det.NuevoRegistro"></i>
+                                            </td>
+                                        </tr>
+                                        <tr class="clearfix" *ngIf="!model.IsLectura">
+                                            <div class="col100 padding4 rowfull" (click)="addComp()">
+                                                <div class="inner-row-col pointer noselect"> <span
+                                                        class="icon-inner-row-col transition">Agregar <i
+                                                            class="fas fa-plus-circle uno"></i></span> </div>
+                                            </div>
+                                        </tr>
+                                        <tr *ngIf="model.IsLectura && model.varComp?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <table class="flex-table table table-striped table-hover" *ngIf="!model.tipoIdent">
+                                    <thead>
+                                        <tr>
+                                            <th>Organización</th>
+                                            <th>Alias</th>
+                                            <th>Rol</th>
+                                            <th>Actividad Delictiva</th>
+                                            <th>Observaciones Específicas</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varComp2; let i = index">
+
+                                            <td>
+                                                <select [(ngModel)]="det.organizacion_id"
+                                                    (change)="changeOrganizacionDos(det, i,false)"
+                                                    [disabled]="det.pralias_id!=0 || model.IsLectura">
+                                                    <option value="0">Seleccionar</option>
+                                                    <option *ngFor="let org of model.listOrganizacionesIlegales"
+                                                        value="{{org.organizacion_id}}">{{org.nombre}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select [(ngModel)]="det.pralias_id"
+                                                    [disabled]="det.pralias_id!=0 || model.IsLectura">
+                                                    <option value="0">Seleccionar</option>
+                                                    <option *ngFor="let alias of model.lstAlias[i];"
+                                                        value="{{alias.alias_id}}">{{alias.aliasnn}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select [(ngModel)]="det.rol_id" [disabled]="model.IsLectura">
+                                                    <option *ngFor="let rol of model.lstRol" value="{{rol.id}}">
+                                                        {{rol.detalle}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select [(ngModel)]="det.actividad_delictiva_id"
+                                                    [disabled]="model.IsLectura">
+                                                    <option *ngFor="let act of model.lstActivaIlicita"
+                                                        value="{{act.id}}">{{act.detalle}}</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <textarea [(ngModel)]="det.observaciones"
+                                                    [disabled]="model.IsLectura"></textarea>
+                                            </td>
+                                            <td>
+                                                <div class="col col100 rowfull" *ngIf="det.pralias_id!=0">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="openSenal(det, i)">
+                                                        <span class="icon-inner-row-col transition">Señales</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col col100 rowfull"
+                                                    *ngIf="det.pralias_id!=0 && !model.IsLectura">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="openVincularAlias(det)">
+                                                        <span class="icon-inner-row-col transition">Vincular
+                                                            Cobio</span>
+                                                    </div>
+                                                </div>
+                                                <i class="fas size20 fa-times-circle pointer noselect"
+                                                    (click)="deleteComp2(i)" *ngIf="det.NuevoRegistro"></i>
+                                            </td>
+                                        </tr>
+                                        <tr class="clearfix" *ngIf="!model.IsLectura">
+                                            <div class="col100 padding4 rowfull" (click)="addComp2()">
+                                                <div class="inner-row-col pointer noselect"> <span
+                                                        class="icon-inner-row-col transition">Agregar <i
+                                                            class="fas fa-plus-circle uno"></i></span> </div>
+                                            </div>
+                                        </tr>
+                                        <tr *ngIf="model.IsLectura && model.varComp2?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == false">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPage(4)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == true">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPageDetalle(4)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section-modal animated slideInRight faster section-modal-6" *ngIf="model.steps[4].active">
+            <div class="col col100">
+                <div class="inner-col texture clearfix">
+                    <div class="col col100">
+                        <div class="col col25" style="float: right;">
+                            <div class="btn-yes pointer noselect" (click)="openModalBienes()">Parametrizar Bien</div>
+                        </div>
+                    </div>
+                    <div class="col col25">
+                        <div class="label-row">Tipo Bien</div>
+                        <select [(ngModel)]="model.varBusquedaDetalle.tipo_bien" (change)="changeTipoBien()">
+                            <option value="0">Seleccionar</option>
+                            <option *ngFor="let det of model.listTipoBien;" value="{{det.id}}">{{det.detalle}}</option>
+                        </select>
+                    </div>
+                    <div class="col col25">
+                        <div class="label-row">Clase</div>
+                        <input type="text" placeholder="Selecciona" (click)="saveClase()" [(ngModel)]="model.varBusquedaDetalle.clase">
+                    </div>
+                    <div class="col col25">
+                        <div class="label-row">Marca</div>
+                        <input type="text" placeholder="Selecciona" (click)="saveMarca()" [(ngModel)]="model.varBusquedaDetalle.marca">
+                    </div>
+                    <div class="col col25">
+                        <div class="label-row">Dueño</div>
+                        <select [(ngModel)]="model.varBusquedaDetalle.propietario_id">
+                            <option *ngFor="let det of model.listPropietario;" value="{{det.id}}">{{det.detalle}}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col col25">
+                        <div class="label-row">Característica Puntual</div>
+                        <input type="text" [(ngModel)]="model.varBusquedaDetalle.detalle">
+                    </div>
+                    <div class="col col25">
+                        <div class="label-row">&nbsp;</div>
+                        <div class="btn-buscar pointer noselect" (click)="buscarBienes()">Buscar</div>
+                    </div>
+                    <div class="col col25" *ngIf="!model.IsLectura">
+                        <div class="label-row">&nbsp;</div>
+                        <div class="btn-buscar pointer noselect" (click)="openDetalleRelaciones()">Relacionar</div>
+                    </div>
+
+                    <div class="line-col"></div>
+
+
+                    <div class="col col100">
+                        <div class="col col15" style="float: right;">
+                            <div class="label-row">Bienes relacionados</div>
+                            <div class="col col80" style="padding: 0px !important;">
+                                <input class="togetherLeft" value="{{model.NBienesRelacionados}}" disabled>
+                            </div>
+                            <div class="col col20" style="padding: 0px !important;">
+                                <div class="search-modal">
+                                    <div class="btn-search" style="background: #EEE;">
+                                        <i class="fa fa-star fa-pulse uno" style="font-size: 15px;"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col col15" style="float: right;">
+                            <div class="label-row">Cantidad</div>
+                            <input value="{{model.varResultBien?.length}}" disabled>
+                        </div>
+                    </div>
+                    <div class="col col100">
+                        <div class="inner-col nopadding clearfix">
+                            <div class="table-content mini-tabla nopadding">
+                                <table class="flex-table table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Consecutivo</th>
+                                            <th>Tipo Bien</th>
+                                            <th>Clase</th>
+                                            <th>Marca</th>
+                                            <th>Dueño</th>
+                                            <th>Observaciones</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varResultBien;">
+                                            <td> <span class="icon-inner-row-col transition"><i class="fas fa-star fa-pulse uno" style="font-size: 15px;" *ngIf="det.padre_id==this.model.varAnotaciones.anotacion_id && det.origen=='A'"></i> {{det.consecutivo}}</span> </td>
+                                            <td>{{det.tipo_bien}}</td>
+                                            <td>{{det.clase}}</td>
+                                            <td>{{det.marca}}</td>
+                                            <td>{{det.propietario}}</td>
+                                            <td>{{det.observaciones}}</td>
+                                            <td class="clearfix">
+                                                <div class="col col100 rowfull"
+                                                    *ngIf="det.padre_id==model.varAnotaciones.anotacion_id && !model.IsLectura">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="openBienRelacion(det,false)">
+                                                        <span class="icon-inner-row-col transition">Editar</span>
+                                                    </div>
+                                                </div>
+                                                <div class="col col100 rowfull"
+                                                    *ngIf="det.padre_id!=model.varAnotaciones.anotacion_id || model.IsLectura">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="openBienRelacion(det,true)">
+                                                        <span class="icon-inner-row-col transition">Detalle</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr *ngIf="model.varResultBien?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == false">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPage(5)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="model.IsLectura == true">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPageDetalle(5)">Siguiente <div
+                            class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="section-modal animated slideInRight faster section-modal-7" *ngIf="model.steps[5].active">
+            <div class="col col100">
+                <div class="inner-col texture clearfix">
+                    <div class="col col100 title-row">Movimientos Migratorios</div>
+                    <div class="col col100">
+                        <div class="inner-col nopadding clearfix">
+                            <div class="table-content mini-tabla nopadding">
+                                <table class="flex-table table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Soporte Migratorio No.</th>
+                                            <th>Fecha Inicio</th>
+                                            <th>Fecha Término</th>
+                                            <th>Ver</th>
+                                            <th *ngIf="!model.IsLectura">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varMovim; let i = index">
+                                            <td>
+                                                <div class="col 10"><span class="icon-inner-row-col transition"> #{{det.anotacion_migratorio_id}}</span> </div>
+                                                <div class="col 90">
+                                                    <input type="text" [disabled]="model.IsLectura"
+                                                    [(ngModel)]="det.informe_migratorio">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <input type="date" [disabled]="model.IsLectura"
+                                                    [(ngModel)]="det.fecha_inicio">
+                                            </td>
+                                            <td>
+                                                <input type="date" [disabled]="model.IsLectura"
+                                                    [(ngModel)]="det.fecha_termino">
+                                            </td>
+                                            <td>
+                                                <div class="col col100 rowfull"
+                                                    *ngIf="det.informe_migratorio!='' && det.informe_migratorio!= undefined">
+                                                    <div class="inner-row-col pointer noselect"
+                                                        (click)="openMigratorioDetalle(det)">
+                                                        <span class="icon-inner-row-col transition"> Guardar y ver
+                                                            Detalle</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td *ngIf="!model.IsLectura">
+                                                <i class="fas size20 fa-times-circle pointer noselect"
+                                                    *ngIf="det.NuevoRegistro" (click)="deleteMovim(i)"></i>
+                                            </td>
+                                        </tr>
+                                        <tr class="clearfix" *ngIf="!model.IsLectura">
+                                            <div class="col100 padding4 rowfull" (click)="addMovim()">
+                                                <div class="inner-row-col pointer noselect"> <span
+                                                        class="icon-inner-row-col transition">Agregar <i
+                                                            class="fas fa-plus-circle uno"></i></span> </div>
+                                            </div>
+                                        </tr>
+                                        <tr *ngIf="model.IsLectura && model.varMovim?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-modal" *ngIf="model.IsLectura == false">
+                <div class="btn-col pointer noselect modal-action" (click)="nextPage(6)">Siguiente <div
+                        class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                </div>
+            </div>
+            <div class="btn-modal" *ngIf="model.IsLectura == true">
+                <div class="btn-col pointer noselect modal-action" (click)="nextPageDetalle(6)">Siguiente <div
+                        class="inner-btn"><i class="fas fa-arrow-right"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="section-modal animated slideInRight faster section-modal-2" *ngIf="model.steps[6].active">
+            <div class="col col100">
+                <div class="inner-col texture clearfix">
+                    <div class="col col100">
+                        <div class="title-row">Georreferenciación</div>
+                        <div class="col col100">
+                            <div class="table-content">
+                                <table class="flex-table table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Departamento</th>
+                                            <th>Municipio</th>
+                                            <th>Zona</th>
+                                            <th>Corregimiento</th>
+                                            <th>Vereda</th>
+                                            <th>Sitio</th>
+                                            <th>Barrio</th>
+                                            <th>Dirección</th>
+                                            <th>Ruta</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varGeo;">
+                                            <td>{{det.departamento}}</td>
+                                            <td>{{det.municipio}}</td>
+                                            <td>{{det.zona}}</td>
+                                            <td>{{det.corregimiento}}</td>
+                                            <td>{{det.vereda}}</td>
+                                            <td>{{det.sitio}}</td>
+                                            <td>{{det.barrio}}</td>
+                                            <td>{{det.direccion}}</td>
+                                            <td>{{det.ruta}}</td>
+                                        </tr>
+                                        <tr *ngIf="model.varGeo?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="line-col"></div>
+                    <div class="col col100">
+                        <div class="title-row">Multimedia</div>
+                        <div class="col col100">
+                            <div class="table-content">
+                                <table class="flex-table table table-striped table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Descripción Multimedia</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="scroll">
+                                        <tr *ngFor="let det of model.varMulti;">
+                                            <td>{{det.descripcion}}</td>
+                                            <td class="clearfix">
+                                                <div class="col col100 rowfull" *ngIf="det.url_adjunto!='' && det.url_adjunto!=undefined">
+                                                    <a href="{{det.url_adjunto}}" target="_blank">
+                                                        <div class="btn-buscar pointer noselect " > <span class="size13" > {{det.nombreMultimedia}}  <i class="fas fa-eye"></i></span></div>
+                                                    </a> 
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr *ngIf="model.varMulti?.length == 0">
+                                            <div class="dbempty">Sin datos</div>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="!model.IsLectura">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPage(7)">Guardar
+                        <div class="inner-btn"><i class="fas fa-save"></i></div>
+                    </div>
+                </div>
+                <div class="btn-modal" *ngIf="!model.IsLectura">
+                    <div class="btn-col pointer noselect modal-action" (click)="nextPage(8)">Notificar
+                        Aprobación
+                        <div class="inner-btn"><i class="fas fa-paper-plane"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-modal [title]="'Observaciones Actividad Territorial'" [show]="model.activTeriModal" [size]="'big-modal'"
+    (close)="closeActivTerriModal($event)">
+    <div class="col col100">
+        <div class="inner-col texture clearfix">
+            <div class="col col100">
+                <div class="title-row">Observaciones Actividad Territorial</div>
+                <div class="label-row">Actividad</div>
+                <input type="text" disabled style="width: 250px;" [(ngModel)]="model.actividad">
+                <div class="inner-col nopadding clearfix" style="margin-top: 10px;">
+                    <div class="table-content mini-tabla nopadding">
+                        <table class="flex-table table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Atributos</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="scroll">
+                                <tr *ngFor="let det of model.varActividadObs; let i = index">
+                                    <td>{{det.atributo}}</td>
+                                    <td><textarea [(ngModel)]='det.observaciones'></textarea></td>
+                                </tr>
+                                <tr *ngIf="model.varActividadObs?.length == 0">
+                                    <div class="dbempty">Sin datos</div>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="btn-modal" *ngIf="!model.IsLectura">
+                <div class="btn-col pointer noselect modal-action" (click)="GuardarAtributosTerritorio()">Guardar <div
+                        class="inner-btn"><i class="fas fa-check-circle"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-modal [title]="'Señales Particulares y Identificaciones Especiales'" [show]="model.senalModal" [size]="''"
+    (close)="closeSenalModal($event)">
+    <div class="col col100">
+        <div class="inner-col texture clearfix">
+            <div class="col col100">
+                <div class="col" [ngClass]="{'col60':model.tipoIdent,'col100':!model.tipoIdent}">
+                    <div class="title-row">Señales Particulares</div>
+                    <div class="col" [ngClass]="{'col50':!model.tipoIdent,'col100':model.tipoIdent}">
+                        <div class="label-row" *ngIf="model.tipoIdent">Nombre Completo</div>
+                        <div class="label-row" *ngIf="!model.tipoIdent">Alias</div>
+                        <input type="text" [(ngModel)]="model.varSenalInfo.nombres" disabled>
+                    </div>
+                    <div class="col col100">
+                        <div class="col col60">
+                            <div class="inner-col nopadding clearfix">
+                                <div class="table-content mini-tabla nopadding">
+                                    <table class="flex-table table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Tipo Señal</th>
+                                                <th>Detalle</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="scroll">
+                                            <tr *ngFor="let det of model.varSenal; let i = index">
+                                                <td>
+                                                    <select [(ngModel)]="det.tipo_id"
+                                                        [disabled]="model.IsLectura || det.isExterno">
+                                                        <option *ngFor="let tiposenial of model.lstTipoSenial"
+                                                            value="{{tiposenial.id}}">{{tiposenial.detalle}}</option>
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <textarea [(ngModel)]="det.detalle"
+                                                        [disabled]="model.IsLectura || det.isExterno"></textarea>
+                                                </td>
+                                                <td>
+
+                                                    <div *ngIf="det.isExterno" class="label-row">Señal Externa</div>
+                                                    <i class="fas size20 fa-times-circle pointer noselect"
+                                                        *ngIf='det.NuevoRegistro' (click)="deleteCSenal(i)"></i>
+                                                </td>
+                                            </tr>
+                                            <tr class="clearfix" *ngIf="!model.IsLectura">
+                                                <div class="col100 padding4 rowfull" (click)="addCSenal()">
+                                                    <div class="inner-row-col pointer noselect"> <span
+                                                            class="icon-inner-row-col transition">Agregar <i
+                                                                class="fas fa-plus-circle uno"></i></span> </div>
+                                                </div>
+                                            </tr>
+                                            <tr *ngIf="model.IsLectura && model.varSenal?.length == 0">
+                                                <div class="dbempty">Sin datos</div>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col col40">
+                            <div class="inner-col nopadding clearfix">
+                                <div class="table-content mini-tabla nopadding">
+                                    <table class="flex-table table table-striped table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>
+                                                    <div class="col col70">
+                                                        Rasgos Morfológicos
+                                                    </div>
+                                                    <div class="col col30">
+                                                        Acciones
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="scroll">
+                                            <tr *ngFor="let det of model.varRasgo; let i = index">
+                                                <td>
+                                                    <div class="col col70">
+                                                        <textarea [(ngModel)]="det.rasgo_morfologico"
+                                                            [disabled]="model.IsLectura || det.isExterno"></textarea>
+                                                    </div>
+                                                    <div class="col col30" style="padding-top: 25px;">
+                                                        <div *ngIf="det.isExterno" class="label-row">Rasgo Externo</div>
+                                                        <i class="fas size20 fa-times-circle pointer noselect"
+                                                            *ngIf='det.NuevoRegistro' (click)="deleteCRasgo(i)"></i>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr class="clearfix" *ngIf="!model.IsLectura">
+                                                <div class="col100 padding4 rowfull" (click)="addCRasgo()">
+                                                    <div class="inner-row-col pointer noselect"> <span
+                                                            class="icon-inner-row-col transition">Agregar <i
+                                                                class="fas fa-plus-circle uno"></i></span> </div>
+                                                </div>
+                                            </tr>
+                                            <tr *ngIf="model.IsLectura && model.varRasgo?.length == 0">
+                                                <div class="dbempty">Sin datos</div>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col col40" *ngIf="model.tipoIdent">
+                    <div class="title-row">Identificaciones Especiales</div>
+                    <div class="col col100">
+                        <div class="col col50">
+                            <div class="label-row">CODA</div>
+                            <input type="text" [(ngModel)]="model.varInfoEspeciales.coda">
+                        </div>
+                        <div class="col col50">
+                            <div class="label-row">Tipo Desmovilización</div>
+                            <select [(ngModel)]="model.varInfoEspeciales.tipo_desmovilizacion_id">
+                                <option *ngFor="let tipodesm of model.lstTipoDesmov" value="{{tipodesm.id}}">
+                                    {{tipodesm.detalle}}</option>
+                            </select>
+                        </div>
+                        <div class="col col50">
+                            <div class="label-row">Fecha</div>
+                            <input type="date" [(ngModel)]="model.varInfoEspeciales.fecha">
+                        </div>
+                        <div class="col col50">
+                            <div class="label-row">Lugar</div>
+                            <input type="text" [(ngModel)]="model.varInfoEspeciales.lugar">
+                        </div>
+                        <div class="col col100">
+                            <div class="label-row">Detalle</div>
+                            <textarea [(ngModel)]="model.varInfoEspeciales.detalle"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="btn-modal" *ngIf="!model.IsLectura">
+            <div class="btn-col pointer noselect modal-action" (click)="guardarSenales()">Guardar <div
+                    class="inner-btn"><i class="fas fa-times-circle"></i></div>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-modal [title]="'Detalle Movimientos Migratorios'" [show]="model.migratModal" [size]="'huge-modal'"
+    (close)="closeMigratorioModal($event)">
+    <div class="col col100">
+        <div class="inner-col texture clearfix">
+            <div class="col col100">
+                <div class="col col25" style="float: right;">
+                    <div class="label-row">Informe Migratorio No.</div>
+                    <input type="text" disabled [(ngModel)]="model.varMigratorioDetalle.informe_migratorio">
+                </div>
+            </div>
+            <div class="col col100">
+                <div class="inner-col nopadding clearfix">
+                    <div class="table-content mini-tabla nopadding">
+                        <table class="flex-table table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>País Origen</th>
+                                    <th>País Destino</th>
+                                    <th>Municipio Contacto</th>
+                                    <th>Nacionalidad</th>
+                                    <th>
+                                        <div class="col col50">Información personal</div>
+                                        <div class="col col50">Acciones</div>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody class="scroll">
+                                <tr *ngFor="let det of model.varMigrat; let i = index">
+                                    <td>
+                                        <!-- <select [(ngModel)]="det.pais_origen_id" [disabled]="model.IsLectura">
+                                            <option *ngFor="let pais of model.listPais" value="{{pais.id}}">
+                                                {{pais.detalle}}</option>
+                                        </select> -->
+                                        <input type="text" placeholder="Selecciona" (click)="savePaises('PaisOrigen',i)" [disabled]="model.IslecturaDetalle"
+                                        [(ngModel)]="det.pais_origen">
+                                    </td>
+                                    <td>
+                                        <!-- <select [(ngModel)]="det.pais_destino_id" [disabled]="model.IsLectura">
+                                            <option *ngFor="let pais of model.listPais" value="{{pais.id}}">
+                                                {{pais.detalle}}</option>
+                                        </select> -->
+                                        <input type="text" placeholder="Selecciona" (click)="savePaises('PaisDestino',i)" [disabled]="model.IslecturaDetalle"
+                                        [(ngModel)]="det.pais_destino">
+                                    </td>
+                                    <td>
+                                        <!-- <select [(ngModel)]="det.municipio_contacto_id" [disabled]="model.IsLectura">
+                                            <option value="0">Seleccionar</option>
+                                            <option *ngFor="let muni of model.listMunicipios"
+                                                value="{{muni.municipio_id}}">{{muni.nombre}}</option>
+                                        </select> -->
+                                        <input type="text" placeholder="Selecciona" (click)="saveMunicipios(i)" [disabled]="model.IslecturaDetalle"
+                                        [(ngModel)]="det.municipio_contacto">
+                                    </td>
+                                    <td>
+                                        <!-- <select [(ngModel)]="det.nacionalidad_id" [disabled]="model.IsLectura">
+                                            <option *ngFor="let nac of model.listNacionalidad" value="{{nac.id}}">
+                                                {{nac.detalle}}</option>
+                                        </select> -->
+                                        <input type="text" placeholder="Selecciona" (click)="saveNacionalidad(i)" [disabled]="model.IslecturaDetalle"
+                                        [(ngModel)]="det.nacionalidad">
+                                    </td>
+                                    <td>
+                                        <div class="col col50" (click)="OpenInfoPersonas(det,i)">
+                                            <div class="inner-row-col pointer noselect">
+                                                <span class="icon-inner-row-col transition">
+                                                    Información personal <i class="fas fa-angle-double-down uno"></i>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="col col50">
+                                            <i class="fas size20 fa-times-circle pointer noselect"
+                                                *ngIf="det.NuevoRegistro" (click)="deleteMigrat(i)"></i>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="clearfix" *ngIf="!model.IsLectura">
+                                    <div class="col100 padding4 rowfull" (click)="addMigrat()">
+                                        <div class="inner-row-col pointer noselect"> <span
+                                                class="icon-inner-row-col transition">Agregar <i
+                                                    class="fas fa-plus-circle uno"></i></span> </div>
+                                    </div>
+                                </tr>
+                                <tr *ngIf="model.IsLectura && model.varMigrat?.length == 0">
+                                    <div class="dbempty">Sin datos</div>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="btn-modal" *ngIf="!model.IsLectura">
+            <div class="btn-col pointer noselect modal-action" (click)="GuardarMigratorioDet()">Guardar <div
+                    class="inner-btn"><i class="fas fa-times-circle"></i></div>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-modal [title]="'Detalle Personal Movimientos Migratorios'" [show]="model.migratPersonalModal"
+    [size]="'big-modal-geo'" (close)="model.migratPersonalModal=($event)">
+    <div class="col col100">
+        <div class="inner-col nopadding" style="height: auto;">
+            <div class="table-content mini-tabla nopadding">
+                <table class="flex-table table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tipo Documento</th>
+                            <th>No. Identificación</th>
+                            <th>Nombre Completo</th>
+                            <th>Ocupación</th>
+                            <th>Num. Contacto</th>
+                            <th>Correo Electrónico</th>
+                            <th>Días Estadia</th>
+                        </tr>
+                    </thead>
+                    <tbody class="scroll">
+                        <tr *ngFor="let det of model.varMigratPersona; let i = index">
+
+                            <td>
+                                <select [(ngModel)]="det.tipo_documento_id" [disabled]="model.IsLectura">
+                                    <option *ngFor="let tipo of model.listTipoDocumento" value="{{tipo.id}}">
+                                        {{tipo.detalle}}</option>
+                                </select>
+                            </td>
+                            <td>
+                                <input type="text" [(ngModel)]="det.num_identificacion" [disabled]="model.IsLectura">
+                            </td>
+                            <td>
+                                <input type="text" [(ngModel)]="det.nombre_completo" [disabled]="model.IsLectura">
+                            </td>
+                            <td>
+                                <input type="text" [(ngModel)]="det.ocupacion" [disabled]="model.IsLectura">
+                            </td>
+                            <td>
+                                <input type="number" [(ngModel)]="det.num_contacto" [disabled]="model.IsLectura">
+                            </td>
+                            <td>
+                                <input type="text" [(ngModel)]="det.correo_electronico" [disabled]="model.IsLectura">
+                            </td>
+                            <td>
+                                <input type="text" [(ngModel)]="det.dias_estadia"
+                                [disabled]="model.IsLectura">
+                            </td>
+                        </tr>
+                        <tr *ngIf="model.IsLectura && model.varMigratPersona?.length == 0">
+                            <div class="dbempty">Sin datos</div>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="btn-col pointer noselect modal-action" arial-label
+            (click)="GuardarInfoPersonas(model.varMigratPersona[0])" *ngIf="!model.IsLectura"
+            style="font-size: medium; background-color: var(--color-uno); border-left-color: rgb(97, 166, 14); border-right-color: rgb(97, 166, 14);">
+            Guardar <div class="inner-btn"><i class="fas fa-save"></i></div>
+        </div>
+    </div>
+</app-modal>
+<app-modal [title]="'Relacionar Bienes'" [show]="model.bienModal" [size]="''" (close)="model.bienModal=($event)">
+    <div class="col col100">
+        <div class="inner-col texture clearfix">
+            <div class="col col25">
+                <div class="label-row">Tipo Bien</div>
+                <select [(ngModel)]="model.varDetalle.tipo_bien" [disabled]="model.IslecturaDetalle"
+                    (change)="changeTipoBienDet(false)">
+                    <option value="0">Seleccionar</option>
+                    <option *ngFor="let det of model.listTipoBienDet;" value="{{det.id}}">{{det.detalle}}</option>
+                </select>
+            </div>
+            <div class="col col25">
+                <div class="label-row">Clase</div>
+                <input type="text" placeholder="Selecciona" (click)="saveClaseDet()" [disabled]="model.IslecturaDetalle"
+                    [(ngModel)]="model.varDetalle.clase">
+            </div>
+            <div class="col col25">
+                <div class="label-row">Marca</div>
+                <input type="text" placeholder="Selecciona" (click)="saveMarcaDet()" [disabled]="model.IslecturaDetalle"
+                    [(ngModel)]="model.varDetalle.marca">
+            </div>
+            <div class="col col25">
+                <div class="label-row">Dueño</div>
+                <select [(ngModel)]="model.varDetalle.propietario_id" [disabled]="model.IslecturaDetalle"
+                    (change)="changePropietario()">
+                    <option *ngFor="let det of model.listPropietarioDet;" value="{{det.id}}">{{det.detalle}}</option>
+                </select>
+            </div>
+            <div class="col col25 depends depends1">
+                <div class="label-row">Unidad</div>
+                <input type="text" placeholder="Selecciona" (click)="saveUnidad()" [disabled]="model.IslecturaDetalle"
+                    [(ngModel)]="model.varDetalle.unidad">
+            </div>
+            <div class="col col25 depends depends1">
+                <div class="label-row">Dependencia</div>
+                <input type="text" placeholder="Selecciona" (click)="saveDependencia()"
+                    [disabled]="model.IslecturaDetalle" [(ngModel)]="model.varDetalle.dependencia">
+            </div>
+            <div class="col col10 depends depends1">
+                <div class="label-row">Grado</div>
+                <input type="text" disabled [(ngModel)]="model.varDetalle.grado" [disabled]="model.IslecturaDetalle">
+            </div>
+            <div class="col col40 depends depends1">
+                <div class="label-row">Funcionario</div>
+                <input type="text" placeholder="Selecciona" (click)="saveFuncionarios()"
+                    [disabled]="model.IslecturaDetalle" [(ngModel)]="model.varDetalle.funcionario">
+            </div>
+            <div class="col col100">
+                <div class="label-row">Observaciones</div>
+                <textarea [(ngModel)]="model.varDetalle.observaciones" [disabled]="model.IslecturaDetalle"></textarea>
+            </div>
+            <div class="col col50">
+                <div class="btn-buscar pointer noselect" (click)=" filetargetPrincipal.click()"
+                    *ngIf="model.varDetalle.url_adjunto==''||model.varDetalle.url_adjunto==undefined">
+                    <input [disabled]="model.IslecturaDetalle" type="file" #filetargetPrincipal id="filetargetPrincipal"
+                        (change)="changeMultimedia($event.target.files,model.varDetalle)" style="display: none;">
+                    <!--multiple-->
+                    <span class="size13">Cargar Multimedia <i class="fas fa-upload"></i></span>
+                    <span class="size13"> {{model.varDetalle.nombreMultimedia}}</span>
+                </div>
+                <div class="col col50 together" style="padding: 0px !important;"
+                    *ngIf="model.varDetalle.url_adjunto!=''&&model.varDetalle.url_adjunto!=undefined">
+                    <input [disabled]="model.IslecturaDetalle" type="file" #filetargetPrincipal id="filetargetPrincipal"
+                        (change)="changeMultimedia($event.target.files,model.varDetalle)" style="display: none;">
+                    <!--multiple-->
+                    <div class="btn-buscar pointer noselect togetherLeft" (click)="filetargetPrincipal.click()"> <span
+                            class="size13">Editar Archivo <i class="fas fa-upload"></i></span></div>
+                </div>
+                <div class="col col50 together" style="padding: 0px !important; border-left: #fff solid 1px;"
+                    *ngIf="model.varDetalle.url_adjunto!=''&&model.varDetalle.url_adjunto!=undefined">
+                    <a href="{{model.varDetalle.url_adjunto}}" target="_blank">
+                        <div class="btn-buscar pointer noselect togetherRight"> <span class="size13">
+                                {{model.varDetalle.nombreMultimedia}} <i class="fas fa-eye"></i></span></div>
+                    </a>
+                </div>
+            </div>
+            <!-- <DIV class="col col50" style="float: right;">
+                <div class="btn-buscar pointer noselect" (click)="openModalCobios()">Crear COBIO</div>
+            </DIV> -->
+
+            <div class="line-col depends depends1 depends2"></div>
+
+            <div class="col depends depends1 depends2"
+                [ngClass]="{'col50':model.varDetalle.codigo == 2,'col100':model.varDetalle.codigo == 1}">
+                <div class="title-row">Detalles</div>
+                <div class="col col100">
+                    <div class="inner-col nopadding clearfix">
+                        <div class="table-content mini-tabla nopadding">
+                            <table class="flex-table table table-striped table-hover nomargin">
+                                <thead>
+                                    <tr>
+                                        <th>Atributos</th>
+                                        <th>Detalle</th>
+                                        <th *ngIf="!model.IsLectura">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="scroll">
+                                    <tr *ngFor="let det of model.varBDetalle;let i = index">
+                                        <td>
+                                            <select [(ngModel)]="det.atributo_id" [disabled]="model.IslecturaDetalle">
+                                                <option value="0">Seleccionar</option>
+                                                <option *ngFor="let det of model.listAtributos;"
+                                                    value="{{det.bien_elemento_det_id}}">{{det.atributo}}</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <textarea type="text" [(ngModel)]="det.detalle"
+                                                [disabled]="model.IslecturaDetalle"></textarea>
+                                        </td>
+                                        <td *ngIf="!model.IslecturaDetalle">
+                                            <i class="fas size20 fa-times-circle pointer noselect"
+                                                *ngIf="det.NuevoRegistro" (click)="deleteBDetalle(i)"></i>
+                                        </td>
+                                    </tr>
+                                    <tr class="clearfix" *ngIf="!model.IslecturaDetalle">
+                                        <div class="col100 padding4 rowfull" (click)="addBDetalle()">
+                                            <div class="inner-row-col pointer noselect"> <span
+                                                    class="icon-inner-row-col transition">Agregar <i
+                                                        class="fas fa-plus-circle uno"></i></span> </div>
+                                        </div>
+                                    </tr>
+                                    <tr *ngIf="model.IslecturaDetalle && model.varBDetalle?.length == 0">
+                                        <div class="dbempty">Sin datos</div>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col col50 depends depends2">
+                <div class="title-row">Vinculo A</div>
+                <div class="col col100">
+                    <div class="col col33">
+                        <span style="color: #606060; font-size: 18px;">Identificado</span>
+                        <div class="roundedTwo minirounded col nopadding margin-right">
+                            <input id="cbvident1" [disabled]="model.vtipoIdent=='I'" type="checkbox"
+                                [checked]="model.vtipoIdent=='I'" (change)="changeVinculoIdentificado('I')" />
+                            <label for="cbvident1"></label>
+                        </div>
+                    </div>
+                    <div class="col col33">
+                        <span style="color: #606060; font-size: 18px;">Alias</span>
+                        <div class="roundedTwo minirounded col nopadding margin-right">
+                            <input id="cbvident2" [disabled]="model.vtipoIdent=='A'" type="checkbox"
+                                [checked]="model.vtipoIdent=='A'" (change)="changeVinculoIdentificado('A')" />
+                            <label for="cbvident2"></label>
+                        </div>
+                    </div>
+                    <div class="col col33">
+                        <span style="color: #606060; font-size: 18px;">Organizacion</span>
+                        <div class="roundedTwo minirounded col nopadding margin-right">
+                            <input id="cbvident3" [disabled]="model.vtipoIdent=='O'" type="checkbox"
+                                [checked]="model.vtipoIdent=='O'" (change)="changeVinculoIdentificado('O')" />          
+                            <label for="cbvident3"></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col col50" *ngIf="model.vtipoIdent=='I'">
+                    <div class="label-row">No. Identificación</div>
+                    <div class="col col80" style="padding: 0px !important;">
+                        <input [disabled]="model.IslecturaDetalle" class="togetherLeft" type="number"
+                            placeholder="Identificación" [(ngModel)]="model.varDetalle.num_identificacion">
+                    </div>
+                    <div class="col col20" *ngIf="!model.IslecturaDetalle" style="padding: 0px !important;">
+                        <div class="search-modal" (click)="ObtenerDatosPersonaDet()"
+                            *ngIf="!model.varDetalle.buscandoSearch">
+                            <div class="btn-search pointer noselect">
+                                <i class="fas fa-search"></i>
+                            </div>
+                        </div>
+                        <div class="search-modal" *ngIf="model.varDetalle.buscandoSearch">
+                            <div class="btn-search">
+                                <i class="fa fa-spinner fa-pulse"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col col50" *ngIf="model.vtipoIdent=='I'">
+                    <div class="label-row">Nombre Completo</div>
+                    <input type="text" disabled [(ngModel)]="model.varDetalle.nombre"
+                        [disabled]="model.IslecturaDetalle">
+                </div>
+               <div class="col col50" *ngIf="model.vtipoIdent=='A' || model.vtipoIdent=='O'">
+                    <div class="label-row">Organización</div>
+                    <input type="text" placeholder="Selecciona" (click)="SaveOrganizacion()"
+                            [disabled]="model.IslecturaDetalle" [(ngModel)]="model.varDetalle.organizacion">
+                </div>
+                <div class="col col50" *ngIf="model.vtipoIdent=='A'">
+                    <div class="label-row">Alias</div>
+                    <select [(ngModel)]="model.varDetalle.alias_id" [disabled]="model.IslecturaDetalle">
+                        <option value="0">Seleccionar</option>
+                        <option *ngFor="let lista of model.lstAliasDet" value="{{lista.alias_id}}">{{lista.aliasnn}}
+                        </option>
+                    </select>
+                </div>
+
+            </div>
+
+
+        </div>
+        <div class="btn-modal">
+            <div class="btn-col pointer noselect modal-action" (click)="GuardarDetalleRelacion()"
+                *ngIf="!model.IsLectura">Guardar<div class="inner-btn"><i class="fas fa-save"></i></div>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-modal [title]="'Observaciones'" [show]="model.bitacoraModal" [size]="'small-modal'"
+    (close)="closeBitacoraModal($event)">
+    <div class="col col100">
+        <div class="inner-col texture clearfix">
+            <div class="col col25">
+                <div class="label-row">Consecutivo</div>
+                <input type="text" disabled>
+            </div>
+            <div class="col col100">
+                <div class="inner-col nopadding clearfix col-fix">
+                    <div class="title-col">Observaciones</div>
+                    <div class="table-content mini-tabla nopadding">
+                        <table class="flex-table table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Fecha Cambio</th>
+                                    <th>Fecha Respuesta</th>
+                                    <th>Observaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="scroll">
+                                <tr *ngFor="let det of model.varBitacora;">
+                                    <td>{{det.fechaCambio | date: "dd-MM-yyyy"}}</td>
+                                    <td>{{det.fechaRespuesta | date: "dd-MM-yyyy"}}</td>
+                                    <td>{{det.observaciones}}</td>
+                                </tr>
+                                <tr *ngIf="model.varBitacora?.length == 0">
+                                    <div class="dbempty">Sin datos</div>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="btn-modal">
+            <div class="btn-col pointer noselect modal-action" (click)="closeBitacoraModal(false)">Cerrar <div
+                    class="inner-btn">
+                    <i class="fas fa-times-circle"></i></div>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-modal [title]="'Vincular Alias'" [show]="model.vincularModal" [size]="'mini-modal-profile'"
+    (close)="model.vincularModal=($event)">
+    <div class="col col100">
+        <div class="inner-col texture clearfix">
+            <div class="col col100">
+                <div class="label-row">Tipo Documento</div>
+                <select [disabled]="model.vincularAlias.IsReady" [(ngModel)]="model.vincularAlias.dataText">
+                    <option *ngFor="let item of model.listTipoDocumento;" value="{{item.detalleCorto}}">{{item.detalle}}
+                    </option>
+                </select>
+            </div>
+            <div class="col col100">
+                <div class="label-row">N° Identificación</div>
+                <div class="col col50 together" style="margin-top: -7px;">
+                    <input [disabled]="model.vincularAlias.IsReady" class="togetherLeft" type="number"
+                        placeholder="Identificación" [(ngModel)]="model.vincularAlias.id">
+                </div>
+                <div class="col col50 together" style="margin-top: -7px;">
+                    <div class="btn-buscar pointer noselect togetherRight" (click)="ObtenerDatosPersonaAnotaciones()">
+                        Consultar</div>
+                </div>
+            </div>
+            <div class="col col100">
+                <div class="label-row">Apellidos</div>
+                <input type="text" disabled [(ngModel)]="model.vincularAlias.apellidos">
+            </div>
+            <div class="col col100">
+                <div class="label-row">Nombres</div>
+                <input type="text" disabled [(ngModel)]="model.vincularAlias.nombres">
+            </div>
+            <div class="col col100">
+                <div class="label-row center">Alias Principal</div>
+                <input class="tgl tgl-flat" id="cb1" type="checkbox" [(ngModel)]="model.vincularAlias.alias_principal">
+                <label class="tgl-btn" for="cb1"></label>
+            </div>
+            <div class="col col100">
+                <div class="profile-upload profile-img">
+                    <img class="profile-img" [src]="model.vincularAlias.fotografia">
+                </div>
+            </div>
+        </div>
+        <div class="btn-modal row100">
+            <div class="col col50">
+                <div class="btn-buscar pointer noselect" (click)="clearVinculacionAlias()">Limpiar</div>
+            </div>
+            <div class="col col50">
+                <div class="btn-buscar pointer noselect" (click)="CrearVinculacionAlias()">Guardar Vinculación</div>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-modal [title]="'Tipificación'" [show]="model.tipificacionModal" [size]="'mini-modal-profile'"
+    (close)="closeTipificacionModal($event)">
+    <div class="col col100">
+        <div class="inner-col texture clearfix">
+            <div class="table-content" style="padding: 0px !important;">
+                <table class="flex-table table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tipificación</th>
+                        </tr>
+                    </thead>
+                    <tbody class="scroll">
+                        <tr *ngFor="let det of model.varTipificacion;">
+                            <td>{{det.tipificacion}}</td>
+                        </tr>
+                        <tr *ngIf="model.varTipificacion?.length == 0">
+                            <div class="dbempty">Sin datos</div>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-modal [title]="'Alias'" [show]="model.aliasModal" [size]="'mini-modal-profile'" (close)="closeAliasModal($event)">
+    <div class="col col100">
+        <div class="inner-col texture clearfix">
+            <div class="table-content" style="padding: 0px !important;">
+                <table class="flex-table table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Alias</th>
+                        </tr>
+                    </thead>
+                    <tbody class="scroll">
+                        <tr *ngFor="let alias of model.varAliasList;">
+                            <td>{{alias.alias}}</td>
+                        </tr>
+                        <tr *ngIf="model.varAliasList?.length == 0">
+                            <div class="dbempty">Sin datos</div>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</app-modal>
+
+<app-ver-modal [title]="'WHO COLUMNS'" [show]="model.who" [size]="'mini-modal'" [items]="model.items" [titles]=""
+    (close)="closeWho($event)"></app-ver-modal>
+
+<!-- modal lista pop up -->
+<app-select-modal [title]="'Datos'" [array]="model.datosmodal" [arraytemp]="model.datosmodal" [show]="model.selectmodal"
+    [size]='model.sizeModel' (output)="datafrom($event, 1)" (close)="closeModalSelect($event, 1)">
+</app-select-modal>
+
+<app-select1-modal [title]="'Datos'" [array]="model.datosmodal" [arraytemp]="model.datosmodal"
+    [show]="model.select1modal" (output)="datafrom($event, 2)" (close)="closeModalSelect($event, 2)">
+</app-select1-modal>
+
+<div class="hidVacio">
+    <!--No modificar-->
+    <div class="datashow texture">
+        <div class="info">Cargados: {{model.varhistorial?.length}} Datos</div>
+        <div class="info">Ejecutado: {{model.d}}</div>
+
+        <span>
+            <div class="pagination noselect pointer next" (click)="next()" *ngIf="model.varhistorial?.length >= 20"> <i
+                    class="fas fa-chevron-right"></i> </div>
+            <div class="pagination noselect">Página {{model.pagActual + 1}}</div>
+            <div class="pagination noselect pointer prev" (click)="prev()" *ngIf="model.pagActual != 0"> <i
+                    class="fas fa-chevron-left"></i></div>
+        </span>
+    </div>
+    <!--No modificar-->
+</div>
