@@ -1,0 +1,47 @@
+<div class="modal-select-box animated fadeIn fast" style="z-index: 100 !important" *ngIf="show">
+    <div class="inner-modal">
+        <div class="box-modal {{size}}">
+            <div class="close-modal pointer noselect" (click)="closeModal()"><i class="fas fa-times-circle"></i></div>
+            <div class="title-modal">{{title}}: Selecciona un dato</div>
+            <div class="tools-select">
+                <div class="tool-select"><input type="text" #input placeholder="Buscar..."
+                        (keyup)="searchorden($event.target.value);" autofocus></div>
+                <div class="tool-select search-select pointer noselect"> <i class="fas fa-search"></i> </div>
+            </div>
+            <div class="content-modal content-modal-select">
+                <div class="table-content">
+                    <table class="flex-table table table-striped table-hover">
+                        <tbody class="scroll">
+                            <tr class="pointer" style="font-size:13px" *ngFor="let dato of arraytemp;" (click)="clickData(dato)">
+                                <td *ngIf="size!='big-modal'">
+                                    <div [ngClass]="{'col100': dato.sigla==undefined, 'col70': dato.sigla!=undefined, 'col60': dato.sigla2!=undefined}" style="padding-right: 5px;">{{dato.nombre}}</div>
+                                    <div [ngClass]="{'col30': dato.sigla2==undefined, 'col20': dato.sigla2!=undefined}"
+                                    style="padding-left: 5px; border-left: 2px solid white;" *ngIf="dato.sigla!=undefined">{{dato.sigla}}</div>
+                                    <div class="col20" style="padding-left: 5px; border-left: 2px solid white;" *ngIf="dato.sigla2!=undefined">{{dato.sigla2}}</div>
+
+                                </td>
+                                <td *ngIf="size=='big-modal'">
+                                    <!-- <div class="col50" style="padding-right: 5px;">{{dato.nombre}}</div>
+                                    <div class="col50" style="padding-left: 5px; border-left: 2px solid white;" >{{dato.sigla}}</div> -->
+
+
+                                    <div [ngClass]="{'col50': dato.sigla2==undefined, 'col33': dato.sigla2!=undefined}" style="padding-right: 5px;">{{dato.nombre}}</div>
+                                    <div [ngClass]="{'col50': dato.sigla2==undefined, 'col33': dato.sigla2!=undefined}"
+                                    style="padding-left: 5px; border-left: 2px solid white;" *ngIf="dato.sigla!=undefined">{{dato.sigla}}</div>
+                                    <div class="col33" style="padding-left: 5px; border-left: 2px solid white;" *ngIf="dato.sigla2!=undefined">{{dato.sigla2}}</div>
+                                </td>
+                            </tr>
+                            <tr *ngIf="arraytemp?.length == 0">
+                                <div class="dbempty">Sin Resultados</div>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <!-- <div class="row-select pointer" *ngFor="let dato of arraytemp;" (click)="clickData(dato)">
+                            <div class="col col50" (click)="clickData(dato)">{{dato.sigla}}</div>
+                            <div class="col col50" (click)="clickData(dato)">{{dato.nombre}}</div>
+                        </div> -->
+            </div>
+        </div>
+    </div>
+</div>
